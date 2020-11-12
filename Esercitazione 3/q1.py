@@ -170,7 +170,8 @@ m.setObjective(obj, GRB.MAXIMIZE)
 m.optimize()
 
 for v in m.getVars():
-    print('%s %f' % (v.Varname, v.X))
+    if v.X != 0:
+        print('%s %f' % (v.Varname, v.X))
 
 print('Optimal cost: %f' % m.objVal)
 
