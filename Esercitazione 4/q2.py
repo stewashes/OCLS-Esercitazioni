@@ -110,8 +110,6 @@ m.addConstr(quicksum(quicksum(c_weight[i] * x[i, w] for w in wagon) for i in con
 
 m.addConstrs(quicksum(x[j, w] for j in container if gamma[j, i] == 1) <= 1000 * (y[i, w] + quicksum(x[i, h] for h in wagon if h <= w)) for i in container for w in wagon)
 
-m.write('q1.lp')
-
 m.setObjective(obj, GRB.MINIMIZE)
 m.optimize()
 
@@ -120,6 +118,49 @@ for v in m.getVars():
         print('%s %f' % (v.Varname, v.X))
 
 print('Optimal cost: %f' % m.objVal)
+
+n_rehandling = 0
+
+for j in wagon:
+    for i in container:
+        if x[i,j].X !=0:
+            print('container', i, 'caricato sul vagone', j)
+        if y[i,j].X != 0:
+            n_rehandling += 1
+            print('container', i ,'rehandled durante il caricamento del vagone', j)
+
+print('numero di operazioni di rehandling', n_rehandling)
+print('costo delle operazioni di rehandling', n_rehandling*alpha)
+
+for i in container:
+    load = 0
+    for w in wagon:
+        load = x[i,w].X + load
+
+    if load == 0:
+        print('container', i, 'non caricato')
+
+teu_total = 0
+teu_wagone_total = 0
+
+for j in wagon:
+    for i in container:
+        if x[i,j].X !=0:
+            teu_total = teu_total + c_length[i]/20
+
+    teu_wagone_total = teu_wagone_total + w_length[j]/20
+
+print("teu caricati: ", teu_total)
+
+priority_value = 0
+for j in wagon:
+    for i in container:
+        if x[i,j].X !=0:
+            priority_value = priority_value + c_pi[i]
+
+print("valore commerciale totale caricato: ", priority_value)
+print("percentuale teu caricata: ", (teu_total/teu_wagone_total)*100 , '%')
+
 
 
 
